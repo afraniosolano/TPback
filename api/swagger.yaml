@@ -1,0 +1,97 @@
+---
+swagger: "2.0"
+info:
+  version: "1.0.0a0"
+  title: "ptruora"
+basePath: "/ptruora/v1.0"
+schemes:
+- "http"
+- "https"
+consumes:
+- "application/json"
+produces:
+- "application/json"
+paths:
+  /domain/{name}:
+    get:
+      summary: "Obtener domain por ID"
+      operationId: "rest.domain_resource.CLASS_INSTANCE.get_domain"
+      parameters:
+      - name: "name"
+        in: "path"
+        required: true
+        type: "string"
+        format: "path"
+        x-exportParamName: "Name"
+      responses:
+        200:
+          description: "ok"
+          schema:
+            $ref: "#/definitions/domain_parameters"
+        400:
+          description: "Parámetros inválidos"
+        401:
+          description: "No autorizado"
+        404:
+          description: "No encontrado"
+        500:
+          description: "error interno del servidor"
+definitions:
+  server_parameters:
+    type: "object"
+    properties:
+      address:
+        type: "string"
+      ssl_grade:
+        type: "string"
+      country:
+        type: "string"
+      owner:
+        type: "string"
+    example:
+      owner: "owner"
+      country: "country"
+      address: "address"
+      ssl_grade: "ssl_grade"
+  domain_parameters:
+    type: "object"
+    properties:
+      server_change:
+        type: "integer"
+        minimum: 0
+        maximum: 1
+      ssl_grade:
+        type: "string"
+      previus_ssl_grade:
+        type: "string"
+      logo:
+        type: "string"
+      title:
+        type: "string"
+      is_down:
+        type: "integer"
+        minimum: 0
+        maximum: 1
+      name:
+        type: "string"
+      servers:
+        type: "array"
+        items:
+          $ref: "#/definitions/server_parameters"
+    example:
+      is_down: 0
+      servers:
+      - owner: "owner"
+        country: "country"
+        address: "address"
+        ssl_grade: "ssl_grade"
+      - owner: "owner"
+        country: "country"
+        address: "address"
+        ssl_grade: "ssl_grade"
+      ssl_grade: "ssl_grade"
+      name: "name"
+      previus_ssl_grade: "previus_ssl_grade"
+      logo: "logo"
+      server_change: 0
+      title: "title"
