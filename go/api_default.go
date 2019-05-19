@@ -11,6 +11,7 @@ package swagger
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -61,6 +62,8 @@ func RestDomainResourceCLASSINSTANCEGetDomain(w http.ResponseWriter, r *http.Req
 			Servers:         servidores,
 		}
 
+		_ = saveTrace(name)
+
 		json.NewEncoder(w).Encode(dominio1)
 		w.WriteHeader(http.StatusOK)
 
@@ -107,4 +110,14 @@ func getServers(idDomain string) []ServerParameters {
 	defer rows2.Close()
 
 	return servidores
+
+}
+
+func saveTrace(idDomain string) error {
+	qryString := fmt.Sprintf(
+		"INSERT INTO tbl_traces (id_domain, datetime) VALUES ('%s', NOW())",
+		idDomain)
+
+	_, err := getConnection().Exec(qryString)
+	return err
 }
