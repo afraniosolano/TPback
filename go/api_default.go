@@ -11,65 +11,35 @@ package swagger
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 
 	"github.com/gorilla/mux"
 )
 
-func RestDomainResourceCLASSINSTANCEGetDomain(w http.ResponseWriter, r *http.Request) {
+var MyServerName = "http://127.0.0.1:5501"
 
+func RestDomainResourceCLASSINSTANCEGetDomain(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Access-Control-Allow-Origin", MyServerName)
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
 	params := mux.Vars(r)
 	nameDomain := params["name"]
 
-	count := 0
+	objetoApi := consumeSslLabsToDomainParameters(consumeSslLabs(nameDomain))
+	objetoDB := getDomain(nameDomain)
 
-	db := getConnection()
-
-	rows, err := db.Query("select name,server_change,ssl_grade,previus_ssl_grade,logo,title,is_down FROM tbl_domain where name = '" + nameDomain + "';")
-	if err != nil {
-		log.Fatal(err)
+	if objetoDB.Name != "" && objetoApi.Name != "" {
+		saveDomain(objetoApi)
 	}
-	defer rows.Close()
-	for rows.Next() {
-		var name string
-		var serverChange bool
-		var sslGrade string
-		var previusSsl_grade string
-		var logo string
-		var title string
-		var isDown bool
 
-		if err := rows.Scan(&name, &serverChange, &sslGrade, &previusSsl_grade, &logo, &title, &isDown); err != nil {
-			log.Fatal(err)
-		}
+	if objetoApi.Name != "" {
+		_ = saveTrace(nameDomain)
 
-		count++
-
-		servidores := getServers(name)
-
-		dominio1 := DomainParameters{
-			ServerChange:    serverChange,
-			SslGrade:        sslGrade,
-			PreviusSslGrade: previusSsl_grade,
-			Logo:            logo,
-			Title:           title,
-			IsDown:          isDown,
-			Name:            name,
-			Servers:         servidores,
-		}
-
-		_ = saveTrace(name)
-
-		json.NewEncoder(w).Encode(dominio1)
+		json.NewEncoder(w).Encode(objetoApi)
 		w.WriteHeader(http.StatusOK)
 
-	}
-
-	if count == 0 {
+	} else {
 		var message = Msg{
 			"The domain '" + nameDomain + "' does not exist", 404,
 		}
@@ -79,45 +49,36 @@ func RestDomainResourceCLASSINSTANCEGetDomain(w http.ResponseWriter, r *http.Req
 
 }
 
-func getServers(idDomain string) []ServerParameters {
+func RestDomainResourceCLASSINSTANCEGetTracert(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Access-Control-Allow-Origin", MyServerName)
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
-	var servidores []ServerParameters
+	var listaResp []string
 
-	db2 := getConnection()
-	rows2, err2 := db2.Query("select id_domain,address,ssl_grade,country,owner FROM tbl_server where id_domain = '" + idDomain + "';")
+	db := getConnection()
 
-	if err2 == nil {
+	rows, err := db.Query("SELECT * FROM ptruoradb.tbl_traces ORDER BY datetime DESC LIMIT 20;")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var id_domain string
+		var datetime string
 
-		for rows2.Next() {
-			var idDomain string
-			var address string
-			var sslGrade string
-			var country string
-			var owner string
-
-			if err3 := rows2.Scan(&idDomain, &address, &sslGrade, &country, &owner); err3 == nil {
-
-				item := ServerParameters{address, sslGrade, country, owner}
-
-				servidores = append(servidores, item)
-
-			}
-
+		if err := rows.Scan(&id_domain, &datetime); err != nil {
+			log.Fatal(err)
 		}
+
+		listaResp = append(listaResp, id_domain)
 
 	}
 
-	defer rows2.Close()
+	objres := TracertParameters{
+		Items: listaResp,
+	}
 
-	return servidores
+	json.NewEncoder(w).Encode(objres)
+	w.WriteHeader(http.StatusOK)
 
-}
-
-func saveTrace(idDomain string) error {
-	qryString := fmt.Sprintf(
-		"INSERT INTO tbl_traces (id_domain, datetime) VALUES ('%s', NOW())",
-		idDomain)
-
-	_, err := getConnection().Exec(qryString)
-	return err
 }

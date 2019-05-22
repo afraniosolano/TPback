@@ -15,6 +15,7 @@ import (
 	"strings"
 
 	"github.com/gorilla/mux"
+	cors "github.com/heppu/simple-cors"
 )
 
 type Route struct {
@@ -39,7 +40,7 @@ func NewRouter() *mux.Router {
 			Name(route.Name).
 			Handler(handler)
 	}
-
+	http.Handle("/", cors.CORS(router))
 	return router
 }
 
@@ -60,5 +61,12 @@ var routes = Routes{
 		strings.ToUpper("Get"),
 		"/ptruora/v1.0/domain/{name}",
 		RestDomainResourceCLASSINSTANCEGetDomain,
+	},
+
+	Route{
+		"RestDomainResourceCLASSINSTANCEGetTracert",
+		strings.ToUpper("Get"),
+		"/ptruora/v1.0/tracert",
+		RestDomainResourceCLASSINSTANCEGetTracert,
 	},
 }

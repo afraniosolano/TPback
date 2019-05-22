@@ -26,3 +26,49 @@ type DomainParameters struct {
 
 	Servers []ServerParameters `json:"servers,omitempty"`
 }
+
+func compareDomain(a DomainParameters, b DomainParameters) bool {
+	return &a == &b || (a.ServerChange == b.ServerChange && a.SslGrade == b.SslGrade && a.PreviusSslGrade == b.PreviusSslGrade && a.Logo == b.Logo && a.Title == b.Title && a.IsDown == b.IsDown && a.Name == b.Name)
+}
+
+func consumeSslLabsToDomainParameters(objEntrada SslLabs) DomainParameters {
+	var vIsDown bool = false
+
+	serverChange := false
+	sslGrade := ""
+	previusSsl_grade := ""
+
+	if objEntrada.Status == "READY" || objEntrada.Status == "DNS" {
+		vIsDown = true
+	}
+
+	var servidores []ServerParameters
+
+	for i, endpoint := range objEntrada.Endpoints {
+
+		item := endpointsToServerParameters(endpoint)
+		item.Owner = objEntrada.Host
+
+		if i == 0 {
+			sslGrade = endpoint.Grade
+			previusSsl_grade = endpoint.GradeTrustIgnored
+		}
+
+		servidores = append(servidores, item)
+
+	}
+
+	dominio1 := DomainParameters{
+		ServerChange:    serverChange,
+		SslGrade:        sslGrade,
+		PreviusSslGrade: previusSsl_grade,
+		Logo:            "",
+		Title:           objEntrada.Host,
+		IsDown:          vIsDown,
+		Name:            objEntrada.Host,
+		Servers:         servidores,
+	}
+
+	return dominio1
+
+}

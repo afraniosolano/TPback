@@ -36,6 +36,18 @@ paths:
           description: "No encontrado"
         500:
           description: "error interno del servidor"
+  /tracert:
+    get:
+      summary: "Obtener domain por ID"
+      operationId: "rest.domain_resource.CLASS_INSTANCE.get_tracert"
+      parameters: []
+      responses:
+        200:
+          description: "ok"
+          schema:
+            $ref: "#/definitions/tracert_parameters"
+        500:
+          description: "error interno del servidor"
 definitions:
   server_parameters:
     type: "object"
@@ -95,3 +107,14 @@ definitions:
       logo: "logo"
       server_change: 0
       title: "title"
+  tracert_parameters:
+    type: "object"
+    properties:
+      items:
+        type: "array"
+        items:
+          type: "string"
+    example:
+      items:
+      - "items"
+      - "items"

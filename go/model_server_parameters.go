@@ -10,7 +10,6 @@
 package swagger
 
 type ServerParameters struct {
-
 	Address string `json:"address,omitempty"`
 
 	SslGrade string `json:"ssl_grade,omitempty"`
@@ -18,4 +17,8 @@ type ServerParameters struct {
 	Country string `json:"country,omitempty"`
 
 	Owner string `json:"owner,omitempty"`
+}
+
+func endpointsToServerParameters(ep Endpoints) ServerParameters {
+	return ServerParameters{ep.IPAddress, ep.Grade, "", ""}
 }
